@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kgc.dao.TraderecordDao">
+
+    <resultMap type="com.kgc.entity.Traderecord" id="TraderecordMap">
+            <result property="id" column="id" jdbcType="VARCHAR"/>
+            <result property="pid" column="pId" jdbcType="INTEGER"/>
+            <result property="parentagentid" column="parentAgentId" jdbcType="INTEGER"/>
+            <result property="mid" column="mId" jdbcType="VARCHAR"/>
+            <result property="tradedate" column="tradeDate" jdbcType="TIMESTAMP"/>
+            <result property="bankcard" column="bankCard" jdbcType="VARCHAR"/>
+            <result property="trademoney" column="tradeMoney" jdbcType="NUMERIC"/>
+            <result property="realamount" column="realAmount" jdbcType="NUMERIC"/>
+            <result property="poundage" column="poundage" jdbcType="NUMERIC"/>
+            <result property="rate" column="rate" jdbcType="NUMERIC"/>
+            <result property="posid" column="posID" jdbcType="VARCHAR"/>
+            <result property="source" column="source" jdbcType="INTEGER"/>
+
+            <result property="importdate" column="importDate" />
+       <!--代理商表-->
+        <collection property="agentList"  ofType="com.kgc.entity.Agent">
+            <id column="aid" property="id"/>
+            <result property="name" column="aname"/>
+
+        </collection>
+        <!--商户表-->
+        <collection property="merchantList" ofType="com.kgc.entity.Merchant">
+            <id property="id" column="mid"/>
+            <result property="name"  column="sname"/>
+            <result property="merchantNo" column="merchantNo"/>
+        </collection>
+        <!--平台表-->
+        <collection property="platformList" ofType="com.kgc.entity.Platform">
+            <id property="id" column="pingtaiid"/>
+            <result property="name" column="pname"/>
+        </collection>
+        <!--机具表-->
+        <collection property="posInfoList" ofType="com.kgc.entity.PosInfo">
+            <id property="id" column="jid"/>
+            <result property="posSN" column="posSN"/>
+        </collection>
+
+        <!--机构表-->
+        <collection property="organization" ofType="com.kgc.entity.Organization">
+            <id  property="id" column="gid"/>
+            <result property="name" column="gname"/>
+            <result property="parentOrgId" column="parentOrgId"/>
+            
+        </collection>
+        <!--机构代理商关联表-->
+        <collection property="organizationAgent" ofType="com.kgc.entity.OrganizationAgent">
+            <id  property="id" column="orgid"/>
+            <result property="orgId" column="orgId"/>
+            <result property="agentId" column="agentId"/>
+        </collection>
+        <!--source字典表-->
+        <collection property="sourceList" ofType="com.kgc.entity.Source">
+            <id property="id" column="sourceid"/>
+            <result property="name" column="sourceName"/>
+        </collection>
+    </resultMap>
+
+
+
+    <select id="query" resultMap="TraderecordMap" parameterType="TraderecordParam" >
+        SELECT
+        p.name as pname,
+        o.name as gname,
+        a.name as aname ,
+        m.name as sname ,
+        s.name as sourceName,
+        s.id as sourceid,
+        org.id as orgid,
+        m.merchantNo ,
+        t.importdate,
+        t.source ,
+        t.id ,
+        t.tradeDate ,
+        t.bankCard ,
+        t.tradeMoney ,
+        t.realAmount ,
+        t.poundage ,
+        t.rate ,
+        po.posSN
+     FROM traderecord t
+        INNER JOIN   merchant m on t.mId=m.id
+        INNER JOIN  agent a on t.parentAgentId= a.id
+        INNER JOIN  platform p on p.id=t.pId
+        INNER JOIN  posinfo po on po.id=t.posID
+        INNER JOIN   organization_agent org on org.agentId=a.id
+        INNER JOIN  organization o on o.id=org.orgId
+        inner join source s on s.id=t.source
+        <where>
+            <trim  prefixOverrides="and" >
+                <if test="gname!=null and gname!=''">
+                    o.id=#{gname}
+                </if>
+                <if test="pname!=null and pname!=''">
+                    and  p.id=#{pname}
+                </if>
+
+                <if test="sname!=null and sname!=''">
+                    and  m.name=#{sname}
+                </if>
+                <if test="aname!=null and aname!=''">
+                    and  a.name=#{aname}
+                </if>
+                <if test="source!=null and source!=''">
+                    and   t.source=#{source}
+                </if>
+
+                <if test="merchantNo!=null and merchantNo!=''">
+                    and   m.merchantNo=#{merchantNo}
+                </if>
+                <if test="startTime!=null and startTime!='' and endTime!=null and endTime!=''">
+                    and   t.importdate BETWEEN #{startTime} and #{endTime}
+                </if>
+            </trim>
+        </where>
+
+        limit #{start},10
+    </select>
+
+    <select id="getCount" resultType="int" parameterType="TraderecordParam">
+        SELECT count(1)
+        FROM traderecord t
+
+        INNER JOIN   merchant m on t.mId=m.id
+        INNER JOIN  agent a on t.parentAgentId= a.id
+        INNER JOIN  platform p on p.id=t.pId
+        INNER JOIN  posinfo po on po.id=t.posID
+        INNER JOIN   organization_agent org on org.agentId=a.id
+        INNER JOIN  organization o on o.id=org.orgId
+        inner join source s on s.id=t.source
+        <where>
+            <trim  prefixOverrides="and" >
+                <if test="gname!=null and gname!=''">
+                    o.id=#{gname}
+                </if>
+                <if test="pname!=null and pname!=''">
+                    and  p.id=#{pname}
+                </if>
+
+                <if test="sname!=null and sname!=''">
+                    and  m.name=#{sname}
+                </if>
+                <if test="aname!=null and aname!=''">
+                    and  a.name=#{aname}
+                </if>
+                <if test="source!=null and source!=''">
+                    and   t.source=#{source}
+                </if>
+
+                <if test="merchantNo!=null and merchantNo!=''">
+                    and   m.merchantNo=#{merchantNo}
+                </if>
+                <if test="startTime!=null and startTime!='' and endTime!=null and endTime!=''">
+                    and   t.importdate BETWEEN #{startTime} and #{endTime}
+                </if>
+            </trim>
+        </where>
+
+    </select>
+
+
+    <select id="excel" resultType="Traderecord">
+        select * from  traderecord
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert"  parameterType="Traderecord">
+        insert into traderecord
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+                 id,
+            <if test="pid!=null and pid!=''">
+                pid,
+            </if>
+            <if test="parentagentid!=null and parentagentid!=''">
+               parentagentid,
+            </if>
+            <if test="mid!=null and mid!=''">
+                mid,
+            </if>
+            <if test="tradedate!=null and tradedate!=''">
+                tradedate,
+            </if>
+            <if test="bankcard!=null and bankcard!=''">
+                bankcard,
+            </if>
+            <if test="trademoney!=null and trademoney!=''">
+                trademoney,
+            </if>
+            <if test="realamount!=null and realamount!=''">
+              realamount,
+            </if>
+            <if test="poundage!=null and poundage!=''">
+                poundage,
+            </if>
+            <if test="rate!=null and rate!=''">
+            rate,
+            </if>
+            <if test="posid!=null and posid!=''">
+                posid,
+            </if>
+            <if test="source!=null and source!=''">
+                source,
+            </if>
+            <if test="importdate!=null and importdate!=''">
+                importdate
+            </if>
+      </trim>
+      <trim prefix="values(" suffix=")" suffixOverrides=",">
+
+              #{id},
+
+          <if test="pid!=null and pid!=''">
+              #{pid},
+          </if>
+          <if test="parentagentid!=null and parentagentid!=''">
+              #{parentagentid},
+          </if>
+          <if test="mid!=null and mid!=''">
+           #{mid},
+          </if>
+          <if test="tradedate!=null and tradedate!=''">
+              #{tradedate},
+          </if>
+          <if test="bankcard!=null and bankcard!=''">
+              #{bankcard},
+          </if>
+          <if test="trademoney!=null and trademoney!=''">
+              #{trademoney},
+          </if>
+          <if test="realamount!=null and realamount!=''">
+              #{realamount},
+          </if>
+          <if test="poundage!=null and poundage!=''">
+              #{poundage},
+          </if>
+          <if test="rate!=null and rate!=''">
+              #{rate},
+          </if>
+          <if test="posid!=null and posid!=''">
+              #{posid},
+          </if>
+          <if test="source!=null and source!=''">
+              #{source},
+          </if>
+          <if test="importdate!=null and importdate!=''">
+              #{importdate}
+          </if>
+      </trim>
+
+
+
+    </insert>
+
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update traderecord
+        <set>
+            <if test="pid != null">
+                pid = #{pid},
+            </if>
+            <if test="parentagentid != null">
+                parentagentid = #{parentagentid},
+            </if>
+            <if test="mid != null and mid != ''">
+                mid = #{mid},
+            </if>
+            <if test="tradedate != null">
+                tradedate = #{tradedate},
+            </if>
+            <if test="bankcard != null and bankcard != ''">
+                bankcard = #{bankcard},
+            </if>
+            <if test="trademoney != null">
+                trademoney= #{trademoney},
+            </if>
+            <if test="realamount != null">
+                realamount = #{realamount},
+            </if>
+            <if test="poundage != null">
+                poundage = #{poundage},
+            </if>
+            <if test="rate != null">
+                rate = #{rate},
+            </if>
+            <if test="posid != null and posid != ''">
+                posid = #{posid},
+            </if>
+            <if test="source != null">
+                source = #{source},
+            </if>
+            <if test="importdate != null">
+                importDate = #{importdate},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from datamanagement.traderecord where id = #{id}
+    </delete>
+<!--批量删除-->
+    <delete id="deleteArray">
+        delete  from traderecord where id in
+        <foreach collection="array" item="val" open="(" separator="," close=")">
+            #{val}
+        </foreach>
+    </delete>
+<!--根据id查询信息-->
+
+    <select id="getById" resultMap="TraderecordMap">
+               SELECT
+               t.*,
+        p.name as pname,
+        o.name as gname,
+        a.name as aname ,
+        m.name as sname ,
+        s.name as sourceName,
+        s.id as sourceid,
+        org.id as orgid,
+        p.id as pingtaiid,
+        m.merchantNo ,
+        po.posSN
+        FROM traderecord t
+        INNER JOIN   merchant m on t.mId=m.id
+        INNER JOIN  agent a on t.parentAgentId= a.id
+        INNER JOIN  platform p on p.id=t.pId
+        INNER JOIN  posinfo po on po.id=t.posID
+        INNER JOIN   organization_agent org on org.agentId=a.id
+        INNER JOIN  organization o on o.id=org.orgId
+        inner join source s on s.id=t.source
+
+
+        where t.id=#{id}
+    </select>
+
+    <select id="tubiao" resultMap="TraderecordMap" parameterType="TraderecordParam">
+                SELECT
+               t.*,
+        p.name as pname,
+        o.name as gname,
+        a.name as aname,
+        m.name as sname ,
+        s.name as sourceName,
+        s.id as sourceid,
+        org.id as orgid,
+        p.id as pingtaiid,
+        m.merchantNo ,
+        po.posSN
+        FROM traderecord t
+        INNER JOIN   merchant m on t.mId=m.id
+        INNER JOIN  agent a on t.parentAgentId= a.id
+        INNER JOIN  platform p on p.id=t.pId
+        INNER JOIN  posinfo po on po.id=t.posID
+        INNER JOIN   organization_agent org on org.agentId=a.id
+        INNER JOIN  organization o on o.id=org.orgId
+        inner join source s on s.id=t.source
+        <where>
+            <trim  prefixOverrides="and" >
+                <if test="gname!=null and gname!=''">
+                    o.id=#{gname}
+                </if>
+                <if test="pname!=null and pname!=''">
+                    and  p.id=#{pname}
+                </if>
+                <if test="aname!=null and aname!=''">
+                    and  a.name=#{aname}
+                </if>
+                <if test="startTime!=null and startTime!='' and endTime!=null and endTime!=''">
+                    and   t.importdate BETWEEN #{startTime} and #{endTime}
+                </if>
+            </trim>
+        </where>
+
+
+        order by
+
+        t.tradeDate desc
+    </select>
+
+
+
+
+    <select id="agentList" resultType="Agent">
+        select  * from  agent
+    </select>
+
+    <select id="merchantsList" resultType="Merchant">
+        select * from merchant
+    </select>
+
+    <!--交易图形统计-->
+    <select id="echarsBaobiao" resultMap="TraderecordMap" parameterType="TraderecordParam">
+        SELECT
+        p.name as pname,
+        o.name as gname,
+        a.name as aname ,
+        m.name as sname ,
+        s.name as sourceName,
+        s.id as sourceid,
+        org.id as orgid,
+        m.merchantNo ,
+        t.importdate,
+        t.source ,
+        t.id ,
+        t.tradeDate ,
+        t.bankCard ,
+        t.tradeMoney ,
+        t.realAmount ,
+        t.poundage ,
+        t.rate ,
+        po.posSN
+        FROM traderecord t
+        INNER JOIN   merchant m on t.mId=m.id
+        INNER JOIN  agent a on t.parentAgentId= a.id
+        INNER JOIN  platform p on p.id=t.pId
+        INNER JOIN  posinfo po on po.id=t.posID
+        INNER JOIN   organization_agent org on org.agentId=a.id
+        INNER JOIN  organization o on o.id=org.orgId
+        inner join source s on s.id=t.source
+        <where>
+            <trim  prefixOverrides="and" >
+                <if test="gname!=null and gname!=''">
+                    o.id=#{gname}
+                </if>
+                <if test="pname!=null and pname!=''">
+                    and  p.id=#{pname}
+                </if>
+                <if test="aname!=null and aname!=''">
+                    and  a.name=#{aname}
+                </if>
+        <if test="startTime!=null and startTime!='' and endTime!=null and endTime!=''">
+                    and   t.importdate BETWEEN #{startTime} and #{endTime}
+                </if>
+            </trim>
+        </where>
+        ORDER BY
+ t.tradeMoney ${orderBy}
+limit #{start},10
+    </select>
+
+    <select id="tubiaocount" resultType="int" parameterType="TraderecordParam">
+        SELECT count(1)
+
+        FROM traderecord t
+        INNER JOIN   merchant m on t.mId=m.id
+        INNER JOIN  agent a on t.parentAgentId= a.id
+        INNER JOIN  platform p on p.id=t.pId
+        INNER JOIN  posinfo po on po.id=t.posID
+        INNER JOIN   organization_agent org on org.agentId=a.id
+        INNER JOIN  organization o on o.id=org.orgId
+        inner join source s on s.id=t.source
+        <where>
+            <trim  prefixOverrides="and" >
+                <if test="gname!=null and gname!=''">
+                    o.id=#{gname}
+                </if>
+                <if test="pname!=null and pname!=''">
+                    and  p.id=#{pname}
+                </if>
+                <if test="aname!=null and aname!=''">
+                    and  a.name=#{aname}
+                </if>
+
+
+
+                <if test="startTime!=null and startTime!='' and endTime!=null and endTime!=''">
+                    and   t.importdate BETWEEN #{startTime} and #{endTime}
+                </if>
+            </trim>
+        </where>
+    </select>
+
+
+    
+
+
+</mapper>

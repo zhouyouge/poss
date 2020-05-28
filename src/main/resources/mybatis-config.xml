@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+    <!-- 设置mybatis的行为配置 -->
+    <settings>
+        <!-- 开启mybatis的日志打印 -->
+        <setting name="logImpl" value="LOG4J"/>
+    </settings>
+
+    <!--实体类别名配置-->
+    <typeAliases>
+        <!--给com.kgc.hz.entity.Users取别名users-->
+        <package name="com.kgc.entity"/>
+    </typeAliases>
+
+
+    <!--配置mapper映射文件-->
+   <mappers>
+         <mapper resource="mapper\TraderecordDao.xml"/>
+       <mapper resource="mapper\OrganizationDao.xml"/>
+       <mapper resource="mapper\PlatformDao.xml"/>
+       <mapper resource="mapper\PosInfoMapper.xml"/>
+       <mapper resource="mapper/UserinfoDao.xml"/>
+       <mapper resource="mapper/AgentMapper.xml"/>
+       <mapper resource="mapper/UserinfoDao.xml"/>
+       <mapper resource="mapper/MerchantDao.xml"/>
+       <mapper resource="mapper/LogDao.xml"/>
+       <mapper resource="mapper/HeadMapper.xml"/>
+    </mappers>
+
+
+</configuration>

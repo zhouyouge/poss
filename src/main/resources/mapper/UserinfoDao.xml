@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kgc.dao.UserinfoDao">
+    <resultMap type="com.kgc.entity.UserInfo" id="userinfoMap">
+        <result property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="orgId" column="orgId"/>
+        <result property="level" column="level"/>
+        <result property="roleId" column="roleId"/>
+        <result property="password" column="password"/>
+        <result property="phone" column="phone"/>
+        <result property="registerTime" column="registerTime"/>
+        <result property="updateTime" column="updateTime"/>
+    </resultMap>
+    <!--登录验证-->
+    <select id="getUserinfo" resultMap="userinfoMap" >
+        select
+          u.id, u.username, u.orgId, u.level, u.roleId, u.password, u.phone,
+           u.registerTime, u.updateTime
+        from userinfo u
+        where username = #{username}
+        and password=#{password}
+    </select>
+<!--分页查询用户-->
+    <select id="ufenye" resultType="UserInfo" parameterType="UserPage">
+        SELECT u.id,u.username,o.name as oname,u.level,r.name as rname,u.phone,u.registerTime FROM userinfo u
+        INNER JOIN role r ON u.roleId=r.id
+        INNER JOIN organization o ON u.orgId=o.id
+        INNER JOIN organization_agent oa ON oa.orgId=u.orgId
+        INNER JOIN agent a ON a.id=oa.agentId
+<trim prefix="where" prefixOverrides="and">
+    <if test="oname!=null and oname!=''">
+        o.name=#{oname}
+    </if>
+    <if test="username!=null and username!=''">
+        and u.username=#{username}
+    </if>
+    <if test="aname!=null and aname!=''">
+      and  a.name=#{aname}
+    </if>
+    <if test="level!=null">
+      and  u.level=#{level}
+    </if>
+    <if test="phone!=null and phone!=''">
+       and u.phone=#{phone}
+    </if>
+</trim>
+        limit #{pageIndex},#{pageSize}
+    </select>
+    <!--修改用户-->
+    <update id="update" parameterType="UserInfo"  >
+        update userinfo
+        <trim prefix="set" suffixOverrides=",">
+            <if test="username!=null and username!=''">
+                username=#{username},
+            </if>
+            <if test="level!=null">
+                level=#{level},
+            </if>
+            <if test="phone!=null and phone!=''">
+                 phone=#{phone},
+            </if>
+            <if test="roleId !=null and roleId!=''">
+                roleId=#{roleId},
+            </if>
+            <if test="orgId!=null and orgId!=''">
+                orgId=#{orgId},
+            </if>
+            <if test="password!=null and password!=''">
+                password=#{password},
+            </if>
+            updateTime=now()
+        </trim>
+        where id=#{id}
+    </update>
+    <!--查询有多少用户数据-->
+    <select id="count" resultType="int">
+        SELECT COUNT(1) FROM userinfo u
+INNER JOIN role r ON u.roleId=r.id
+INNER JOIN organization o ON u.orgId=o.id
+INNER JOIN organization_agent oa ON oa.orgId=u.orgId
+INNER JOIN agent a ON a.id=oa.agentId
+        <trim prefix="where" prefixOverrides="and">
+            <if test="oname!=null and oname!=''">
+                a.name=#{oname}
+            </if>
+            <if test="username!=null and username!=''">
+                and u.username=#{username}
+            </if>
+            <if test="aname!=null and aname!=''">
+                and  a.name=#{aname}
+            </if>
+            <if test="level!=null">
+                and  u.level=#{level}
+            </if>
+            <if test="phone!=null and phone!=''">
+                and u.phone=#{phone}
+            </if>
+        </trim>
+    </select>
+    <!--添加-->
+    <insert id="add" parameterType="UserInfo">
+        insert into userinfo
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            id,username,orgId,level,roleId,password,phone,registerTime,updateTime
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{id},#{username},#{orgId},#{level},#{roleId},#{password},#{phone},now(),now()
+        </trim>
+    </insert>
+    <!--导出-->
+    <select id="excel" resultType="UserInfo">
+        select u.*,o.name as oname,r.name as rname from userinfo u
+        INNER JOIN role r ON u.roleId=r.id
+INNER JOIN organization o ON u.orgId=o.id
+INNER JOIN organization_agent oa ON oa.orgId=u.orgId
+INNER JOIN agent a ON a.id=oa.agentId
+    </select>
+    <!--全查机构表-->
+    <select id="organ" resultType="Organization">
+        select * from organization
+    </select>
+    <!--全查角色表-->
+    <select id="role" resultType="Role">
+        select * from role
+    </select>
+</mapper>

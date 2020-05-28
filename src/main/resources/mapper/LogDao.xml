@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kgc.dao.LogDao">
+
+   <insert id="add" >
+       insert into syslog
+        (logId, userId, moduleName, operate, time, className, methodName, params, ip)
+        values
+        (
+        #{logId},
+        #{userId},
+        #{moduleName},
+        #{operate},
+        #{time},
+        #{className},
+        #{methodName},
+        #{params},
+        #{ip}
+        )
+
+   </insert>
+
+ <select id="queryAllSysLog" resultType="com.kgc.entity.SysLog" parameterType="LogParam">
+    SELECT u.username,s.methodName,s.operate,s.time,s.ip,
+    s.moduleName
+    FROM syslog s
+
+    INNER JOIN userinfo u on s.userId=u.id
+    <where>
+        <trim  prefixOverrides="and" >
+            <if test="moduleName!=null and moduleName!=''">
+                s.moduleName  like '%${moduleName}%'
+            </if>
+            <if test="operate!=null and operate!=''">
+                and    s.operate  like '%${operate}%'
+            </if>
+
+            <if test="username!=null and username!=''">
+                and    s.username  like '%${username}%'
+            </if>
+            <if test="startTime!=null and startTime!='' and endTime!=null and endTime!=''">
+                and  s.time BETWEEN #{startTime} and #{endTime}
+            </if>
+        </trim>
+    </where>
+
+  limit #{start},10
+ </select>
+
+ <select id="count" resultType="int" parameterType="LogParam">
+    SELECT count(1)
+    FROM syslog s
+
+    INNER JOIN userinfo u on s.userId=u.id
+     <where>
+         <trim  prefixOverrides="and" >
+             <if test="moduleName!=null and moduleName!=''">
+                 s.moduleName  like '%${moduleName}%'
+             </if>
+             <if test="operate!=null and operate!=''">
+                 and    s.operate  like '%${operate}%'
+             </if>
+
+             <if test="username!=null and username!=''">
+                 and    s.username  like '%${username}%'
+             </if>
+             <if test="startTime!=null and startTime!='' and endTime!=null and endTime!=''">
+                 and  s.time BETWEEN #{startTime} and #{endTime}
+             </if>
+         </trim>
+     </where>
+
+ </select>
+
+ <delete id="delLog">
+  delete from syslog where  id=#{id}
+ </delete>
+</mapper>

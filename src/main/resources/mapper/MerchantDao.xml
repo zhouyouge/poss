@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kgc.dao.MerchantDao">
+<!--分页查询商户表-->
+<select id="mfenye" resultType="Merchant" parameterType="MerchantPage">
+    SELECT m.merchantNo,m.nickName,m.registerTime,m.name,m.id,
+    m.importDate,m.bankCard,m.IDcard,m.phone, s.name as sname,a.name AS aname,p.name as pname,p.id as pid
+    from merchant m
+    INNER JOIN source s ON m.source=s.id
+    INNER JOIN agent a ON a.id=m.parentAgentId
+    INNER JOIN platform p ON p.id=a.pId
+    INNER JOIN organization_agent oa ON oa.agentId=a.id
+    INNER JOIN organization o on o.id=oa.orgId
+<trim prefix="where" prefixOverrides="and">
+    <if test="oid!=null and oid!=''">
+        o.id=#{oid}
+    </if>
+    <if test="pid!=null and pid!=''">
+        and  p.id=#{pid}
+    </if>
+    <if test="aid!=null and aid!=''">
+        and a.id=#{aid}
+    </if>
+    <if test="name!=null and name!=''">
+       and m.name=#{name}
+    </if>
+    <if test="source!=null">
+       and m.source=#{source}
+    </if>
+    <if test="startTime !=null and startTime!=''  and endTime !=null and endTime!='' ">
+        and m.registerTime &gt;=#{startTime} and m.registerTime &lt;=#{endTime}
+    </if>
+</trim>
+    limit #{pageIndex},#{pageSize}
+</select>
+    <!--查询商户表有多少数据-->
+    <select id="count" resultType="int" parameterType="MerchantPage">
+        SELECT COUNT(1) from merchant m
+        INNER JOIN source s ON m.source=s.id
+        INNER JOIN agent a ON a.id=m.parentAgentId
+        INNER JOIN platform p ON p.id=a.pId
+        INNER JOIN organization_agent oa ON oa.agentId=a.id
+        INNER JOIN organization o on o.id=oa.orgId
+        <trim prefix="where" prefixOverrides="and">
+            <if test="oid!=null and oid!=''">
+                o.id=#{oid}
+            </if>
+            <if test="pid!=null and pid!=''">
+                and  p.id=#{pid}
+            </if>
+            <if test="aid!=null and aid!=''">
+                and a.id=#{aid}
+            </if>
+            <if test="name!=null and name!=''">
+                and m.name=#{name}
+            </if>
+            <if test="source!=null">
+                and m.source=#{source}
+            </if>
+            <if test="startTime !=null and startTime!=''  and endTime !=null and endTime!='' ">
+                and m.registerTime &gt;=#{startTime} and m.registerTime &lt;=#{endTime}
+            </if>
+        </trim>
+    </select>
+    <!--添加商户-->
+    <insert id="add" parameterType="Merchant">
+        insert into merchant
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            id ,merchantNo,name,nickName,phone,IDcard,parentAgentId,bankCard,source,registerTime,importDate
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{id},#{merchantNo},#{name},#{nickName},#{phone},#{IDcard},#{parentAgentId},#{bankCard},#{source},#{registerTime},#{importDate}
+        </trim>
+    </insert>
+    <!--修改商户-->
+    <update id="update" parameterType="Merchant">
+        update merchant
+        <trim prefix="set" suffixOverrides=",">
+            <if test="merchantNo!=null and merchantNo!=''">
+                merchantNo=#{merchantNo},
+            </if>
+            <if test="name!=null and name!=''">
+                name=#{name},
+            </if>
+            <if test="nickName!=null and nickName!=''">
+                nickName=#{nickName},
+            </if>
+            <if test="phone!=null and phone!=''">
+                phone=#{phone},
+            </if>
+            <if test="IDcard!=null and IDcard!=''">
+                IDcard=#{IDcard},
+            </if>
+            <if test="parentAgentId!=null and parentAgentId!=''">
+                parentAgentId=#{parentAgentId},
+            </if>
+            <if test="bankCard!=null and bankCard!=''">
+                bankCard=#{bankCard},
+            </if>
+            <if test="source!=null">
+                source=#{source},
+            </if>
+            <if test="registerTime!=null and registerTime!=''">
+                registerTime=#{registerTime},
+            </if>
+            <if test="importDate!=null and importDate!=''">
+                importDate=#{importDate},
+            </if>
+        </trim>
+        where id=#{id}
+    </update>
+    <!--删除商户-->
+    <delete id="del">
+        delete from merchant where id=#{id}
+    </delete>
+    <!--全查商户表-->
+    <select id="excel" resultType="Merchant">
+        select * from merchant
+    </select>
+    <!--根据id查询商户-->
+    <select id="byId" resultType="Merchant">
+        select * from merchant where id=#{id}
+
+    </select>
+</mapper>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kgc.dao.HeadDao">
+    <!--本月交易额-->
+    <select id="jiaoyier" resultType="Double">
+        SELECT SUM(tradeMoney) FROM traderecord
+          WHERE DATE_FORMAT(tradeDate, '%Y%m' )= DATE_FORMAT(CURDATE(), '%Y%m' )
+    </select>
+<!--本月激活的机具数量-->
+    <select id="jihuo" resultType="int">
+        SELECT COUNT(1) FROM posinfo WHERE activeStatus=1 AND DATE_FORMAT(transferDate, '%Y%m' )= DATE_FORMAT(CURDATE(), '%Y%m' )
+    </select>
+<!--本月库存的机具数量-->
+    <select id="jiju" resultType="int">
+        SELECT COUNT(1) FROM posinfo WHERE activeStatus=0 AND DATE_FORMAT(transferDate, '%Y%m' )= DATE_FORMAT(CURDATE(), '%Y%m' )
+    </select>
+    <!--本月新增的代理商数量-->
+    <select id="agent" resultType="int">
+        SELECT COUNT(1) FROM agent WHERE DATE_FORMAT(registerTime, '%Y%m' )= DATE_FORMAT(CURDATE(), '%Y%m' )
+    </select>
+</mapper>

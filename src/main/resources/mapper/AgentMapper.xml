@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kgc.dao.AgentDao">
+    <!--导出数据-->
+    <select id="excel" resultType="Agent">
+        select * from agent where level>0
+    </select>
+<!--查询有多少数据-->
+    <select id="count" parameterType="AgentPage" resultType="int">
+        select count(1) from agent a
+        inner join platform p on a.pId=p.id
+        <trim prefix="where" prefixOverrides="and">
+            <if test="name !=null and name !=''">
+                a.name=#{name}
+            </if>
+            <if test="pId !=null and pId!='' ">
+               and a.pId=#{pId}
+            </if>
+            <if test="phone !=null and phone !=''">
+               and a.phone=#{phone}
+            </if>
+            <if test="source !=null">
+                and a.source=#{source}
+            </if>
+            <if test="startTime !=null and startTime!=''  and endTime !=null and endTime!='' ">
+               and a.importDate &gt;=#{startTime} and a.importDate &lt;=#{endTime}
+            </if>
+        </trim>
+    </select>
+<!--根据id查询代理商表-->
+    <select id="getById" resultType="Agent">
+        select a.*,p.name as pname,l.name as levelName
+        from agent a
+          inner join platform p on a.pId=p.id
+          inner join level l on l.id=a.level
+         where a.id=#{id}
+    </select>
+<!--分页查询代理商表-->
+    <select id="fenye" resultType="Agent" parameterType="AgentPage">
+        select
+        a.id, a.name,s.name as sname, p.name as pname, a1.name as jigou, l.name as lname, a.userName, a.registerTime, a.phone, a.IDcard, a.bankCard, a.source, a.importDate
+        from agent a
+        inner join source s on s.id=a.source
+        inner join agent a1 on a1.id=a.parentAgentId
+        inner join platform p on a.pId=p.id
+        inner join level l on a.level=l.id
+        <trim prefix="where" prefixOverrides="and">
+            <if test="name !=null and name !=''">
+                a.name=#{name}
+            </if>
+            <if test="pId !=null and pId !=''">
+                and a.pId=#{pId}
+            </if>
+            <if test="phone !=null and phone !=''">
+                and a.phone=#{phone}
+            </if>
+            <if test="source !=null">
+                and a.source=#{source}
+            </if>
+            <if test="startTime !=null and startTime!=''  and endTime !=null and endTime!='' " >
+                and a.importDate &gt;=#{startTime} and a.importDate &lt;=#{endTime}
+            </if>
+        </trim>
+        order by a.importDate desc
+        limit #{pageIndex},#{pageSize}
+    </select>
+<!--添加-->
+    <insert id="add" parameterType="Agent" >
+        insert into agent
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            id,name,pId,parentAgentId,level,userName,registerTime,phone,IDcard,bankCard,source,importDate
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{id},#{name},#{pId},#{parentAgentId},#{level},#{userName},#{registerTime},#{phone},#{IDcard},#{bankCard},#{source},#{importDate}
+        </trim>
+    </insert>
+    <!--修改-->
+    <update id="update" parameterType="Agent">
+        update agent
+        <trim prefix="set" suffixOverrides=",">
+            <if test="name !=null and name !=''">
+                name=#{name},
+            </if>
+            <if test="pId !=null">
+                 pId=#{pId},
+            </if>
+            <if test="parentAgentId !=null">
+                 parentAgentId=#{parentAgentId},
+            </if>
+            <if test="level !=null">
+                 level=#{level},
+            </if>
+            <if test="userName !=null">
+                 userName=#{userName},
+            </if>
+            <if test="registerTime !=null">
+                registerTime=#{registerTime},
+            </if>
+            <if test="IDcard !=null and IDcard!=''">
+                 IDcard=#{IDcard},
+            </if>
+            <if test="bankCard !=null and bankCard!=''">
+                 bankCard=#{bankCard},
+            </if>
+            <if test="importDate !=null and importDate!='' ">
+                 importDate=#{importDate},
+            </if>
+
+            <if test="phone !=null and name !=''">
+                 phone=#{phone},
+            </if>
+            <if test="source !=null and source!=''">
+                 source=#{source}
+            </if>
+        </trim>
+        where id=#{id}
+    </update>
+    <!--根据id删除-->
+    <delete id="del">
+        delete from agent where id=#{id}
+    </delete>
+    <!--报表条件查询-->
+    <select id="tb" resultType="Agent" parameterType="AgentPage">
+        SELECT  a.id,t.tradeMoney as tmoney,l.name as lname, a.name, p.name as pname, a1.name as jigou, a.userName, a.registerTime, a.phone, a.IDcard, a.bankCard, a.source, a.importDate from traderecord t
+        inner join agent a on a.id=t.parentAgentId
+        inner join agent a1 on a1.id=a.parentAgentId
+        inner join platform p on p.id=t.pId
+        inner join organization_agent oa on a.id=oa.agentId
+        inner join posinfo ps on ps.id=t.posID
+        inner join organization o on oa.orgId=o.id
+        inner join level l on a.level=l.id
+        <trim prefix="where" prefixOverrides="and">
+            <if test="name !=null and name !=''">
+                a.name=#{name}
+            </if>
+            <if test="pId !=null and pId !=''">
+                and p.id=#{pId}
+            </if>
+
+            <if test="startTime !=null and startTime!=''  and endTime !=null and endTime!='' " >
+                and a.importDate &gt;=#{startTime} and a.importDate &lt;=#{endTime}
+            </if>
+        </trim>
+
+        order by t.tradeMoney  ${orderType}
+        limit #{pageIndex},#{pageSize}
+    </select>
+
+    <!--报表查询每个代理商激活的总机具数-->
+    <select id="bcount" resultType="int">
+        SELECT  COUNT(1) as jiju FROM agent a
+        inner join posinfo ps on ps.transferAgentId=a.id
+        WHERE ps.activeStatus=1 and a.name=#{name}
+    </select>
+<!--条件查询多少条交易记录-->
+    <select id="tbcount" parameterType="AgentPage" resultType="int">
+        SELECT COUNT(1) from traderecord t
+        inner join agent a on a.id=t.parentAgentId
+        inner join agent a1 on a1.id=a.parentAgentId
+        inner join platform p on p.id=t.pId
+        inner join organization_agent oa on a.id=oa.agentId
+        inner join posinfo ps on ps.id=t.posID
+        inner join organization o on oa.orgId=o.id
+        <trim prefix="where" prefixOverrides="and">
+            <if test="name !=null and name !=''">
+                a.name=#{name}
+            </if>
+            <if test="pId !=null and pId !=''">
+                and p.id=#{pId}
+            </if>
+
+            <if test="startTime !=null and startTime!=''  and endTime !=null and endTime!='' " >
+                and a.importDate &gt;=#{startTime} and a.importDate &lt;=#{endTime}
+            </if>
+        </trim>
+
+    </select>
+    <!--查询机具总激活数量-->
+    <select id="jiju2" resultType="int">
+         SELECT COUNT(1) FROM posinfo
+            WHERE activeStatus=1
+    </select>
+    <!--查询总交易金额-->
+    <select id="money" resultType="Double">
+       SELECT SUM(t.tradeMoney) FROM traderecord t
+        INNER JOIN agent a ON a.id=t.parentAgentId
+    </select>
+<!--查询每个代理商的总交易额-->
+    <select id="amoney" resultType="AgentMoney">
+        SELECT a.name as aname, SUM(t.tradeMoney) as tmoney FROM traderecord t
+        INNER JOIN agent a ON a.id=t.parentAgentId
+        GROUP BY a.name
+        ORDER BY tmoney DESC
+        LIMIT 10
+    </select>
+    <!--查询每个代理商激活的总机具数-->
+    <select id="acount" resultType="AgentJiju">
+        SELECT  COUNT(1) as jiju FROM agent a
+        inner join posinfo ps on ps.transferAgentId=a.id
+        WHERE ps.activeStatus=1
+        GROUP BY a.name
+        ORDER BY jiju DESC
+        LIMIT 10
+    </select>
+</mapper>

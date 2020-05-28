@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kgc.dao.PosInfoDao">
+    <select id="getProInfoList" parameterType="PosInfoParamter" resultType="PosInfo">
+        SELECT pos.id,pla.name  platformName,pos.posId,pos.posSN,
+        pos.storeDate,a.name agentName,pos.transferDate,
+        pos.activeStatus,pos.isStandard,pos.importDate,pos.source,
+        s.name sourceName,act.name activeName,iss.name isStandardName
+        FROM posinfo pos
+        INNER JOIN agent a on pos.transferAgentId =a.id
+        INNER JOIN platform pla on a.pId = pla.id
+        INNER JOIN source s on s.id=pos.source
+        INNER JOIN active act on act.id = pos.activeStatus
+        INNER JOIN isstandard iss on iss.id = pos.isStandard
+        <trim prefix="where" prefixOverrides="and">
+            <if test="pt!=null and pt!=''">
+                pla.id=#{pt}
+            </if>
+            <if test="dls!=null and dls!=''">
+                and  pos.transferAgentId=#{dls}
+            </if>
+            <if test="source!=null and source!=''">
+                and  pos.source=#{source}
+            </if>
+            <if test="active!=null and active !=''">
+                and pos.activeStatus=#{active}
+            </if>
+            <if test="isStand!=null and isStand !=''">
+                and  pos.isStandard=#{isStand}
+            </if>
+            <if test="posId!=null and posId!=''">
+                and  pos.posId = #{posId}
+            </if>
+            <if test="posSN!=null and posSN!=''">
+                and  pos.posSN=#{posSN}
+            </if>
+        </trim>
+        limit #{pageIndex},10
+    </select>
+    <select id="getProInfoById" resultType="PosInfo">
+        SELECT pla.name  platformName,pos.id,pos.posId,pos.posSN,pos.storeDate,a.name agentName,pos.transferAgentId,pos.transferDate,pos.activeStatus,pos.isStandard,pos.importDate,pos.source
+        FROM posinfo pos
+        INNER JOIN agent a on pos.transferAgentId =a.id
+        INNER JOIN platform pla on a.pId = pla.id
+        where pos.id=#{id}
+    </select>
+    <select id="count" parameterType="PosInfoParamter" resultType="int">
+       SELECT count(1)
+        FROM posinfo pos
+        INNER JOIN agent a on pos.transferAgentId =a.id
+        INNER JOIN platform pla on a.pId = pla.id
+        INNER JOIN source s on s.id=pos.source
+        INNER JOIN active act on act.id = pos.activeStatus
+        INNER JOIN isstandard iss on iss.id = pos.isStandard
+            <trim prefix="where" prefixOverrides="and">
+                <if test="pt!=null and pt!=''">
+                    pla.id=#{pt}
+                </if>
+                <if test="dls!=null and dls!=''">
+                    and pos.transferAgentId=#{dls}
+                </if>
+                <if test="source!=null and source!=''">
+                    and pos.source=#{source}
+                </if>
+                <if test="active!=null and active !=''">
+                    and pos.activeStatus=#{active}
+                </if>
+                <if test="isStand!=null and isStand !=''">
+                    and pos.isStandard=#{isStand}
+                </if>
+                <if test="posId!=null and posId!=''">
+                    and pos.posId = #{posId}
+                </if>
+                <if test="posSN!=null and posSN!=''">
+                    and pos.posSN=#{posSN}
+                </if>
+            </trim>
+    </select>
+    <select id="getProInfo" resultType="PosInfo">
+        SELECT *
+        FROM posinfo pos
+        INNER JOIN agent a on pos.transferAgentId =a.id
+        INNER JOIN platform pla on a.pId = pla.id
+    </select>
+    <insert id="addPosInfo" parameterType="PosInfo">
+        insert into posinfo(posId,posSN,storeDate,transferAgentId,transferDate,activeStatus,activeDate,isStandard,source,importDate)
+        values(#{posId},#{posSN},#{storeDate},#{transferAgentId},#{transferDate},#{activeStatus},#{activeDate},#{isStandard},1,now())
+    </insert>
+    <delete id="deleteProInfoById" parameterType="int">
+        delete  from posinfo where id=#{id}
+    </delete>
+    <insert id="addPosInfo1" parameterType="PosInfo">
+        insert into posinfo(posId,posSN,storeDate,transferAgentId,transferDate,activeStatus,activeDate,isStandard,source,importDate)
+        values(#{posId},#{posSN},#{storeDate},#{transferAgentId},#{transferDate},#{activeStatus},#{activeDate},#{isStandard},0,now())
+    </insert>
+    <update id="updatePosInfo" parameterType="PosInfo">
+        UPDATE posInfo
+        set posId=#{posId},posSN=#{posSN},storeDate=#{storeDate},
+        <if test="transferAgentId!=null and transferAgentId != ''">
+            transferAgentId=#{transferAgentId},
+        </if>
+        <if test="transferDate!=null and transferDate !=''">
+            transferDate= #{transferDate},
+        </if>
+        <if test="activeStatus!=null and activeStatus !=''">
+            activeStatus = #{activeStatus},
+        </if>
+        <if test="activeDate != null and activeDate !=''">
+            activeDate=#{activeDate},
+        </if>
+        <if test="isStandard!=null and isStandard != ''">
+            isStandard = #{isStandard},
+        </if>
+            source= #{source}
+        where id = #{id}
+    </update>
+    <select id="getSources" resultType="int">
+         SELECT COUNT(pos.id)
+        FROM posinfo pos
+        INNER JOIN agent a on pos.transferAgentId =a.id
+        INNER JOIN platform pla on a.pId = pla.id
+        INNER JOIN source s on s.id=pos.source
+        INNER JOIN active act on act.id = pos.activeStatus
+        INNER JOIN isstandard iss on iss.id = pos.isStandard
+        WHERE pla.name=#{name} and pos.source=1
+    </select>
+    <select id="getSourcess" resultType="int">
+         SELECT COUNT(pos.id)
+        FROM posinfo pos
+        INNER JOIN agent a on pos.transferAgentId =a.id
+        INNER JOIN platform pla on a.pId = pla.id
+        INNER JOIN source s on s.id=pos.source
+        INNER JOIN active act on act.id = pos.activeStatus
+        INNER JOIN isstandard iss on iss.id = pos.isStandard
+        WHERE pla.name=#{name}
+    </select>
+    <select id="getBaoBiao" resultType="PosInfoBaoBIAO">
+    SELECT pla.name platformName,a.name agentName,a2.name ,l.name levelName
+    FROM agent a
+    INNER JOIN platform pla on a.pid = pla.id
+    INNER JOIN agent a2 on a.parentAgentId = a2.id
+    INNER JOIN level l on l.id = a.level
+    </select>
+    <select id="getPosInfoNum" resultType="int">
+        SELECT COUNT(pos.id)
+        FROM posinfo pos
+        INNER JOIN agent a on pos.transferAgentId =a.id
+        INNER JOIN platform pla on a.pId = pla.id
+		WHERE a.name=#{agentName}
+    </select>
+    <select id="getPosInfoNum1" resultType="int">
+        SELECT COUNT(pos.id)
+        FROM posinfo pos
+        INNER JOIN agent a on pos.transferAgentId =a.id
+        INNER JOIN platform pla on a.pId = pla.id
+		WHERE a.name=#{agentName} and pos.activeStatus=1
+    </select>
+    <select id="getJIgou" resultType="Agent">
+        SELECT a.id,a.parentAgentId,a.name,l.name levelname,a.level
+        from agent a
+        INNER JOIN level l on a.level=l.id
+		ORDER BY a.registerTime
+    </select>
+</mapper>
